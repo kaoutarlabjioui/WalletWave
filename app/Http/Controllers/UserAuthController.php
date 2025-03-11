@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Role;
+use App\Models\Wallet;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -15,14 +18,35 @@ class UserAuthController extends Controller
             'password'=>'required|min:8'
 
         ]);
+
+        $roleExiste = Role::whereRaw('LOWER(role_name) = ?','client')->exists();
+
+        if(!$roleExiste){
+            $role = Role::create(['role_name'=>'client']);
+            $roleId = $role->id;
+        }else{
+            $roleId = Role::whereRaw('LOWER(role_name) = ?','client')->first()->id;
+        }
+
         $user = User::create([
             'name' => $registerUserData['name'],
             'email' => $registerUserData['email'],
             'password' => Hash::make($registerUserData['password']),
-            'role_id'=> 2
+            'role_id'=> $roleId
         ]);
+
+        $randomSerial = Str::random(9).$user->id;
+
+         Wallet::create([
+            'user_id'=> $user->id,
+            'serial'=>strtoupper($randomSerial),
+            'balance'=>0
+        ]);
+
+
+
         return response()->json([
-            'message' => 'User Created ',
+            'message' => 'User Created & wallet Created ',
         ]);
     }
 
@@ -41,6 +65,7 @@ class UserAuthController extends Controller
         }
         $token = $user->createToken($user->name.'-AuthToken')->plainTextToken;
         return response()->json([
+            'user'=>$user,
             'access_token' => $token,
         ]);
     }

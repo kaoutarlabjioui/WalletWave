@@ -1,7 +1,10 @@
 <?php
+
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserAuthController;
+use App\Http\Controllers\WalletController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,12 +24,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 
-Route::post('register',[UserAuthController::class,'register']);
-Route::post('login',[UserAuthController::class,'login']);
-Route::post('logout',[UserAuthController::class,'logout'])
-  ->middleware('auth:sanctum');
+Route::post('register', [UserAuthController::class, 'register']);
+Route::post('login', [UserAuthController::class, 'login']);
+Route::post('logout', [UserAuthController::class, 'logout'])
+    ->middleware('auth:sanctum');
 
+Route::post('depots', [WalletController::class, 'depot'])->middleware('auth:sanctum');
+Route::post('retraits', [WalletController::class, 'retrait'])->middleware('auth:sanctum');
+Route::post('transferts', [WalletController::class, 'transfert'])->middleware('auth:sanctum');
 
-// Route::group(['middleware' => ['auth:sanctum']], function () {
-//     Route::post('/logout', [UserAuthController::class, 'logout']);
-//     });

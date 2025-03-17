@@ -138,7 +138,7 @@ public function transfert(Request $request){
             return response()->json(['message' => 'Receiver wallet not found!']);
         }
 
-            $amount = $transfertData(['amount']);
+            $amount = $transfertData['amount'];
 
             if ($sender->wallet->balance < $amount) {
                     return response()->json(['message' => 'Your fonds are not enough!']);
@@ -148,15 +148,20 @@ public function transfert(Request $request){
 
             $receiver->wallet->balance += $amount;
             $receiver->wallet->save();
-
+            $randomSerial = Str::random(9) . $sender->id;
             $transaction = Transaction::create([
                 'sender_wallet_id' => $sender->wallet->id,
-                'recipient_wallet_id' => $receiver->wallet->id,
+                'receiver_wallet_id' => $receiver->wallet->id,
                 'amount' => $amount,
+                'serial' => strtoupper($randomSerial),
                 'type' => 'transfert',
             ]);
+            DB::commit();
+            return response()->json(['message'=>'successful transfert',
+            'sender_balance'=>$sender->wallet->balance,
+             'receiver_balance'=>$receiver->wallet->balance]);
 
-        
+
     }catch (\Exception $e) {
         // Rollback en cas d'erreur
         DB::rollback();
